@@ -1,0 +1,7 @@
+br\edu\unitins\sicap\dto\InconsistenciaResponse.class
+br\edu\unitins\sicap\resource\InconsistenciaResource.class
+br\edu\unitins\sicap\dto\ContextoSemantico.class
+br\edu\unitins\sicap\service\OntologyService.class
+br\edu\unitins\sicap\dto\InconsistenciaRequest.class
+br\edu\unitins\sicap\service\PromptService.class
+br\edu\unitins\sicap\service\LlmService.class

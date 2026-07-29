@@ -1,0 +1,455 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://www.unitins.br/ontologias/sicap-contabil#"
+     xml:base="http://www.unitins.br/ontologias/sicap-contabil"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:dc="http://purl.org/dc/elements/1.1/">
+
+    <!-- =================================================================== -->
+    <!-- Ontologia: SICAP Contábil - Regras de Validação                     -->
+    <!-- Autora: Gisele de Oliveira Veloso                                   -->
+    <!-- Instituição: UNITINS                                                -->
+    <!-- Versão: 1.1                                                         -->
+    <!-- =================================================================== -->
+
+    <owl:Ontology rdf:about="http://www.unitins.br/ontologias/sicap-contabil">
+        <dc:title>Ontologia de Regras de Validação do SICAP Contábil</dc:title>
+        <dc:creator>Gisele de Oliveira Veloso</dc:creator>
+        <dc:description>Ontologia que representa formalmente as regras de validação contábil do SICAP (Sistema Integrado de Controle e Auditoria Pública) do TCE/TO, com foco nas regras BV3, BV29 e BV32.</dc:description>
+        <owl:versionInfo>1.1</owl:versionInfo>
+    </owl:Ontology>
+
+
+    <!-- =================================================================== -->
+    <!-- PROPRIEDADES DE OBJETO (sem domain genérico — específicas por regra)-->
+    <!-- =================================================================== -->
+
+    <owl:ObjectProperty rdf:about="#detectaInconsistencia">
+        <rdfs:label xml:lang="pt">detecta inconsistência</rdfs:label>
+        <rdfs:comment>Relaciona uma regra ao tipo de inconsistência que ela detecta.</rdfs:comment>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="#verificaSaldoDe">
+        <rdfs:label xml:lang="pt">verifica saldo de</rdfs:label>
+        <rdfs:comment>BV3: verifica valores de movimento no Balancete de Verificação.</rdfs:comment>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="#comparaMovimentoCom">
+        <rdfs:label xml:lang="pt">compara movimento com</rdfs:label>
+        <rdfs:comment>BV29: compara o Balancete de Verificação com o Movimento Contábil.</rdfs:comment>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="#comparaCom">
+        <rdfs:label xml:lang="pt">compara com</rdfs:label>
+        <rdfs:comment>BV32: compara saldo da conta de Excesso de Arrecadação com as Alterações Orçamentárias.</rdfs:comment>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="#verificaConta">
+        <rdfs:label xml:lang="pt">verifica conta</rdfs:label>
+        <rdfs:comment>BV32: identifica a conta contábil específica verificada pela regra.</rdfs:comment>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="#pertenceA">
+        <rdfs:label xml:lang="pt">pertence a</rdfs:label>
+        <rdfs:comment>Arquivo contábil pertence a uma remessa (exercício e bimestre).</rdfs:comment>
+        <rdfs:range rdf:resource="#InfoRemessa"/>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="#relacionadaCom">
+        <rdfs:label xml:lang="pt">relacionada com</rdfs:label>
+        <rdfs:comment>BV3 e BV29 são relacionadas: falha na BV29 pode propagar desequilíbrio que viola BV3.</rdfs:comment>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="#implicaViolacaoDe">
+        <rdfs:label xml:lang="pt">implica violação de</rdfs:label>
+        <rdfs:comment>Uma inconsistência pode implicar a violação de outra regra.</rdfs:comment>
+        <rdfs:range rdf:resource="#RegraContabil"/>
+    </owl:ObjectProperty>
+
+
+    <!-- =================================================================== -->
+    <!-- PROPRIEDADES DE DADOS                                               -->
+    <!-- =================================================================== -->
+
+    <owl:DatatypeProperty rdf:about="#codigoRegra">
+        <rdfs:label xml:lang="pt">código da regra</rdfs:label>
+        <rdfs:domain rdf:resource="#RegraContabil"/>
+        <rdfs:range rdf:resource="xsd:string"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#descricaoRegra">
+        <rdfs:label xml:lang="pt">descrição da regra</rdfs:label>
+        <rdfs:domain rdf:resource="#RegraContabil"/>
+        <rdfs:range rdf:resource="xsd:string"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#escrituracao">
+        <rdfs:label xml:lang="pt">escrituração</rdfs:label>
+        <rdfs:comment>S = escriturável, N = não escriturável.</rdfs:comment>
+        <rdfs:domain rdf:resource="#BalanceteVerificacao"/>
+        <rdfs:range rdf:resource="xsd:string"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#tipoBalancete">
+        <rdfs:label xml:lang="pt">tipo do balancete</rdfs:label>
+        <rdfs:comment>1 = Movimento do Exercício, 2 = Encerramento do Exercício.</rdfs:comment>
+        <rdfs:domain rdf:resource="#BalanceteVerificacao"/>
+        <rdfs:range rdf:resource="xsd:integer"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#identificadorLancamento">
+        <rdfs:label xml:lang="pt">identificador do lançamento</rdfs:label>
+        <rdfs:comment>D = débito, C = crédito.</rdfs:comment>
+        <rdfs:domain rdf:resource="#MovimentoContabil"/>
+        <rdfs:range rdf:resource="xsd:string"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#tipoAlteracao">
+        <rdfs:label xml:lang="pt">tipo de alteração</rdfs:label>
+        <rdfs:comment>BV32 considera tipos 2, 6, 11 e 17.</rdfs:comment>
+        <rdfs:domain rdf:resource="#AlteracaoOrcamentaria"/>
+        <rdfs:range rdf:resource="xsd:string"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#codigoContabil">
+        <rdfs:label xml:lang="pt">código contábil</rdfs:label>
+        <rdfs:domain rdf:resource="#ContaContabil"/>
+        <rdfs:range rdf:resource="xsd:string"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#exercicio">
+        <rdfs:label xml:lang="pt">exercício</rdfs:label>
+        <rdfs:domain rdf:resource="#InfoRemessa"/>
+        <rdfs:range rdf:resource="xsd:integer"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#bimestre">
+        <rdfs:label xml:lang="pt">bimestre</rdfs:label>
+        <rdfs:domain rdf:resource="#InfoRemessa"/>
+        <rdfs:range rdf:resource="xsd:integer"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#movimentoContaDevedora">
+        <rdfs:label xml:lang="pt">movimento conta devedora</rdfs:label>
+        <rdfs:domain rdf:resource="#BalanceteVerificacao"/>
+        <rdfs:range rdf:resource="xsd:decimal"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#movimentoContaCredora">
+        <rdfs:label xml:lang="pt">movimento conta credora</rdfs:label>
+        <rdfs:domain rdf:resource="#BalanceteVerificacao"/>
+        <rdfs:range rdf:resource="xsd:decimal"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#saldoAtualContaDevedora">
+        <rdfs:label xml:lang="pt">saldo atual conta devedora</rdfs:label>
+        <rdfs:domain rdf:resource="#BalanceteVerificacao"/>
+        <rdfs:range rdf:resource="xsd:decimal"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#saldoAnteriorContaDevedora">
+        <rdfs:label xml:lang="pt">saldo anterior conta devedora</rdfs:label>
+        <rdfs:domain rdf:resource="#BalanceteVerificacao"/>
+        <rdfs:range rdf:resource="xsd:decimal"/>
+    </owl:DatatypeProperty>
+
+
+    <!-- =================================================================== -->
+    <!-- CLASSES DO DOMÍNIO                                                  -->
+    <!-- =================================================================== -->
+
+    <owl:Class rdf:about="#RegraContabil">
+        <rdfs:label xml:lang="pt">Regra Contábil</rdfs:label>
+        <rdfs:comment>Superclasse abstrata de todas as regras de validação do SICAP.</rdfs:comment>
+    </owl:Class>
+
+    <owl:Class rdf:about="#Inconsistencia">
+        <rdfs:label xml:lang="pt">Inconsistência</rdfs:label>
+        <rdfs:comment>Superclasse de inconsistências detectadas pelas regras do SICAP.</rdfs:comment>
+    </owl:Class>
+
+    <owl:Class rdf:about="#InfoRemessa">
+        <rdfs:label xml:lang="pt">Informação de Remessa</rdfs:label>
+        <rdfs:comment>Metadados da remessa: exercício, bimestre e unidade gestora.</rdfs:comment>
+    </owl:Class>
+
+    <owl:Class rdf:about="#ContaContabil">
+        <rdfs:label xml:lang="pt">Conta Contábil</rdfs:label>
+        <rdfs:comment>Conta do Plano de Contas Único, identificada por código de 17 dígitos.</rdfs:comment>
+    </owl:Class>
+
+    <!-- BalanceteVerificacao pertence a InfoRemessa -->
+    <owl:Class rdf:about="#BalanceteVerificacao">
+        <rdfs:label xml:lang="pt">Balancete de Verificação</rdfs:label>
+        <rdfs:comment>Arquivo contábil com saldos e movimentos por conta contábil.</rdfs:comment>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="#pertenceA"/>
+                <owl:someValuesFrom rdf:resource="#InfoRemessa"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+
+    <!-- MovimentoContabil pertence a InfoRemessa -->
+    <owl:Class rdf:about="#MovimentoContabil">
+        <rdfs:label xml:lang="pt">Movimento Contábil</rdfs:label>
+        <rdfs:comment>Lançamentos contábeis individuais: D (débito) ou C (crédito).</rdfs:comment>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="#pertenceA"/>
+                <owl:someValuesFrom rdf:resource="#InfoRemessa"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+
+    <!-- AlteracaoOrcamentaria pertence a InfoRemessa -->
+    <owl:Class rdf:about="#AlteracaoOrcamentaria">
+        <rdfs:label xml:lang="pt">Alteração Orçamentária</rdfs:label>
+        <rdfs:comment>Decretos de alteração orçamentária classificados por tipo.</rdfs:comment>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="#pertenceA"/>
+                <owl:someValuesFrom rdf:resource="#InfoRemessa"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+
+
+    <!-- =================================================================== -->
+    <!-- SUBCLASSES DE RegraContabil — restrições específicas por regra      -->
+    <!-- =================================================================== -->
+
+    <!-- BV3 -->
+    <owl:Class rdf:about="#RegraEquilibrioMovimento">
+        <rdfs:subClassOf rdf:resource="#RegraContabil"/>
+        <rdfs:label xml:lang="pt">Regra BV3 - Equilíbrio do Movimento</rdfs:label>
+        <rdfs:comment>BV3: Σ movimentoDevedora = Σ movimentoCredora no Balancete (contas S), por tipoBalancete.</rdfs:comment>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="#verificaSaldoDe"/>
+                <owl:someValuesFrom rdf:resource="#BalanceteVerificacao"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="#detectaInconsistencia"/>
+                <owl:someValuesFrom rdf:resource="#InconsistenciaEquilibrioDevedorCredor"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="#relacionadaCom"/>
+                <owl:someValuesFrom rdf:resource="#RegraConsistenciaDebitoMovimentoContabil"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+
+    <!-- BV29 -->
+    <owl:Class rdf:about="#RegraConsistenciaDebitoMovimentoContabil">
+        <rdfs:subClassOf rdf:resource="#RegraContabil"/>
+        <rdfs:label xml:lang="pt">Regra BV29 - Consistência do Débito com Movimento Contábil</rdfs:label>
+        <rdfs:comment>BV29: movimentoDevedora (contas S) do Balancete = Σ lançamentos D no Movimento Contábil, por conta.</rdfs:comment>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="#comparaMovimentoCom"/>
+                <owl:someValuesFrom rdf:resource="#BalanceteVerificacao"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="#comparaMovimentoCom"/>
+                <owl:someValuesFrom rdf:resource="#MovimentoContabil"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="#detectaInconsistencia"/>
+                <owl:someValuesFrom rdf:resource="#InconsistenciaMovimentoDebito"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="#relacionadaCom"/>
+                <owl:someValuesFrom rdf:resource="#RegraEquilibrioMovimento"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+
+    <!-- BV32 -->
+    <owl:Class rdf:about="#RegraExcessoArrecadacao">
+        <rdfs:subClassOf rdf:resource="#RegraContabil"/>
+        <rdfs:label xml:lang="pt">Regra BV32 - Excesso de Arrecadação</rdfs:label>
+        <rdfs:comment>BV32: SaldoAtualDevedor da conta 5.2.2.1.3.02 deve ser menor ou igual à soma dos TiposAlteração 2, 6, 11 e 17.</rdfs:comment>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="#verificaConta"/>
+                <owl:someValuesFrom rdf:resource="#ContaContabil"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="#comparaCom"/>
+                <owl:someValuesFrom rdf:resource="#AlteracaoOrcamentaria"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="#detectaInconsistencia"/>
+                <owl:someValuesFrom rdf:resource="#InconsistenciaExcessoArrecadacao"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+
+
+    <!-- =================================================================== -->
+    <!-- SUBCLASSES DE Inconsistencia                                         -->
+    <!-- =================================================================== -->
+
+    <owl:Class rdf:about="#InconsistenciaEquilibrioDevedorCredor">
+        <rdfs:subClassOf rdf:resource="#Inconsistencia"/>
+        <rdfs:label xml:lang="pt">Inconsistência de Equilíbrio Devedor-Credor</rdfs:label>
+        <rdfs:comment>BV3: somatório devedores difere dos credores no Balancete.</rdfs:comment>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="#implicaViolacaoDe"/>
+                <owl:someValuesFrom rdf:resource="#RegraEquilibrioMovimento"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+
+    <owl:Class rdf:about="#InconsistenciaMovimentoDebito">
+        <rdfs:subClassOf rdf:resource="#Inconsistencia"/>
+        <rdfs:label xml:lang="pt">Inconsistência de Movimento a Débito</rdfs:label>
+        <rdfs:comment>BV29: divergência no movimentoDevedora. Pode propagar violação da BV3.</rdfs:comment>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="#implicaViolacaoDe"/>
+                <owl:someValuesFrom rdf:resource="#RegraConsistenciaDebitoMovimentoContabil"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="#implicaViolacaoDe"/>
+                <owl:someValuesFrom rdf:resource="#RegraEquilibrioMovimento"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+
+    <owl:Class rdf:about="#InconsistenciaExcessoArrecadacao">
+        <rdfs:subClassOf rdf:resource="#Inconsistencia"/>
+        <rdfs:label xml:lang="pt">Inconsistência de Excesso de Arrecadação</rdfs:label>
+        <rdfs:comment>BV32: saldo da conta 5.2.2.1.3.02 supera o permitido pelas alterações orçamentárias.</rdfs:comment>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="#implicaViolacaoDe"/>
+                <owl:someValuesFrom rdf:resource="#RegraExcessoArrecadacao"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+
+
+    <!-- =================================================================== -->
+    <!-- DISJUNÇÕES                                                           -->
+    <!-- =================================================================== -->
+
+    <owl:AllDisjointClasses>
+        <owl:members rdf:parseType="Collection">
+            <rdf:Description rdf:about="#RegraEquilibrioMovimento"/>
+            <rdf:Description rdf:about="#RegraConsistenciaDebitoMovimentoContabil"/>
+            <rdf:Description rdf:about="#RegraExcessoArrecadacao"/>
+        </owl:members>
+    </owl:AllDisjointClasses>
+
+    <owl:AllDisjointClasses>
+        <owl:members rdf:parseType="Collection">
+            <rdf:Description rdf:about="#InconsistenciaEquilibrioDevedorCredor"/>
+            <rdf:Description rdf:about="#InconsistenciaMovimentoDebito"/>
+            <rdf:Description rdf:about="#InconsistenciaExcessoArrecadacao"/>
+        </owl:members>
+    </owl:AllDisjointClasses>
+
+
+    <!-- =================================================================== -->
+    <!-- INDIVÍDUOS                                                           -->
+    <!-- =================================================================== -->
+
+    <owl:NamedIndividual rdf:about="#BV3">
+        <rdf:type rdf:resource="#RegraEquilibrioMovimento"/>
+        <codigoRegra>BV3</codigoRegra>
+        <descricaoRegra>O SOMATÓRIO do movimentoContaDevedora deve ser igual ao SOMATÓRIO do movimentoContaCredora no Balancete de Verificação (contas S), por tipoBalancete.</descricaoRegra>
+        <verificaSaldoDe rdf:resource="#BalanceteVerificacaoInstancia"/>
+        <detectaInconsistencia rdf:resource="#InconsistenciaEquilibrioDevedorCredorInstancia"/>
+        <relacionadaCom rdf:resource="#BV29"/>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="#BV29">
+        <rdf:type rdf:resource="#RegraConsistenciaDebitoMovimentoContabil"/>
+        <codigoRegra>BV29</codigoRegra>
+        <descricaoRegra>O movimentoContaDevedora das contas S do Balancete deve ser igual à somatória dos lançamentos D no Movimento Contábil para a mesma conta.</descricaoRegra>
+        <comparaMovimentoCom rdf:resource="#BalanceteVerificacaoInstancia"/>
+        <comparaMovimentoCom rdf:resource="#MovimentoContabilInstancia"/>
+        <detectaInconsistencia rdf:resource="#InconsistenciaMovimentoDebitoInstancia"/>
+        <relacionadaCom rdf:resource="#BV3"/>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="#BV32">
+        <rdf:type rdf:resource="#RegraExcessoArrecadacao"/>
+        <codigoRegra>BV32</codigoRegra>
+        <descricaoRegra>O SaldoAtualDevedor da conta 5.2.2.1.3.02 deve ser menor ou igual à soma dos TiposAlteração 2, 6, 11 e 17 na AlteraçãoOrçamentária.</descricaoRegra>
+        <verificaConta rdf:resource="#ContaExcessoArrecadacao"/>
+        <comparaCom rdf:resource="#AlteracaoOrcamentariaInstancia"/>
+        <detectaInconsistencia rdf:resource="#InconsistenciaExcessoArrecadacaoInstancia"/>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="#ContaExcessoArrecadacao">
+        <rdf:type rdf:resource="#ContaContabil"/>
+        <codigoContabil>52213020000000000</codigoContabil>
+        <rdfs:label xml:lang="pt">5.2.2.1.3.02 - Excesso de Arrecadação</rdfs:label>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="#InfoRemessaInstancia">
+        <rdf:type rdf:resource="#InfoRemessa"/>
+        <rdfs:label xml:lang="pt">Informação de Remessa</rdfs:label>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="#BalanceteVerificacaoInstancia">
+        <rdf:type rdf:resource="#BalanceteVerificacao"/>
+        <rdfs:label xml:lang="pt">Balancete de Verificação</rdfs:label>
+        <pertenceA rdf:resource="#InfoRemessaInstancia"/>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="#MovimentoContabilInstancia">
+        <rdf:type rdf:resource="#MovimentoContabil"/>
+        <rdfs:label xml:lang="pt">Movimento Contábil</rdfs:label>
+        <pertenceA rdf:resource="#InfoRemessaInstancia"/>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="#AlteracaoOrcamentariaInstancia">
+        <rdf:type rdf:resource="#AlteracaoOrcamentaria"/>
+        <rdfs:label xml:lang="pt">Alteração Orçamentária</rdfs:label>
+        <pertenceA rdf:resource="#InfoRemessaInstancia"/>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="#InconsistenciaEquilibrioDevedorCredorInstancia">
+        <rdf:type rdf:resource="#InconsistenciaEquilibrioDevedorCredor"/>
+        <rdfs:label xml:lang="pt">Inconsistência BV3 - Desequilíbrio devedor/credor</rdfs:label>
+        <implicaViolacaoDe rdf:resource="#BV3"/>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="#InconsistenciaMovimentoDebitoInstancia">
+        <rdf:type rdf:resource="#InconsistenciaMovimentoDebito"/>
+        <rdfs:label xml:lang="pt">Inconsistência BV29 - Divergência no movimento a débito</rdfs:label>
+        <implicaViolacaoDe rdf:resource="#BV29"/>
+        <implicaViolacaoDe rdf:resource="#BV3"/>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="#InconsistenciaExcessoArrecadacaoInstancia">
+        <rdf:type rdf:resource="#InconsistenciaExcessoArrecadacao"/>
+        <rdfs:label xml:lang="pt">Inconsistência BV32 - Excesso de arrecadação acima do permitido</rdfs:label>
+        <implicaViolacaoDe rdf:resource="#BV32"/>
+    </owl:NamedIndividual>
+
+</rdf:RDF>
