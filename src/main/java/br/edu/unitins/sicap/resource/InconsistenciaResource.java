@@ -7,7 +7,10 @@ import br.edu.unitins.sicap.service.LlmService;
 import br.edu.unitins.sicap.service.OntologyService;
 import br.edu.unitins.sicap.service.PromptService;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -62,8 +65,21 @@ public class InconsistenciaResource {
             return Response.ok(response).build();
 
         } catch (IllegalArgumentException e) {
+            // Regra não encontrada na ontologia
             return Response.status(Response.Status.NOT_FOUND)
                     .entity(e.getMessage())
+                    .build();
+
+        } catch (IllegalStateException e) {
+            // Configuração ausente (ex.: OPENAI_API_KEY não definida)
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage())
+                    .build();
+
+        } catch (RuntimeException e) {
+            // Falha na chamada ao LLM (rede, erro da API, resposta inesperada etc.)
+            return Response.status(Response.Status.BAD_GATEWAY)
+                    .entity("Falha ao gerar explicação via LLM: " + e.getMessage())
                     .build();
         }
     }
