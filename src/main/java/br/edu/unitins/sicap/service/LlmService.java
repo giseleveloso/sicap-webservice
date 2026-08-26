@@ -79,6 +79,12 @@ public class LlmService {
     @ConfigProperty(name = "ollama.api.url", defaultValue = "http://localhost:11434/api/chat")
     String ollamaApiUrl;
 
+    // Temperatura baixa reduz a "criatividade"/aleatoriedade do modelo,
+    // ajudando a mitigar alucinação em tarefas que exigem precisão factual
+    // (o padrão da API do Ollama, sem esse parâmetro, é 0.8).
+    @ConfigProperty(name = "ollama.temperature", defaultValue = "0.2")
+    Double ollamaTemperature;
+
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(15))
             .build();
@@ -232,11 +238,13 @@ public class LlmService {
 
     // ==================== Ollama (local) ====================
 
-    private String gerarExplicacaoOllama(String prompt) throws IllegalStateException {
+    private String gerarExplicacaoOllama(String prompt) {
         try {
             ObjectNode raiz = objectMapper.createObjectNode();
             raiz.put("model", ollamaModel);
             raiz.put("stream", false);
+            ObjectNode options = raiz.putObject("options");
+            options.put("temperature", ollamaTemperature);
             ArrayNode mensagens = raiz.putArray("messages");
             ObjectNode mensagemUsuario = mensagens.addObject();
             mensagemUsuario.put("role", "user");
@@ -246,7 +254,7 @@ public class LlmService {
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(ollamaApiUrl))
-                    .timeout(Duration.ofSeconds(120)) // modelos locais podem ser mais lentos
+                    .timeout(Duration.ofSeconds(300)) // modelos locais podem ser mais lentos
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(corpoRequisicao))
                     .build();
