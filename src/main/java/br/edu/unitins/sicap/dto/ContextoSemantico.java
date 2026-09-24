@@ -1,6 +1,6 @@
 package br.edu.unitins.sicap.dto;
 
-import java.util.List;
+import java.util.Map;
 
 /**
  * Contexto semântico retornado pelo Serviço Ontológico após a inferência do
@@ -16,10 +16,12 @@ public class ContextoSemantico {
     public String descricaoRegra;
 
     /**
-     * Códigos das regras relacionadas, inferidas pelo reasoner a partir das
-     * propriedades relacionadaCom / implicaViolacaoDe (ex.: BV29 -> [BV3]).
+     * Regras relacionadas, inferidas pelo reasoner (relacionadaCom), com
+     * código -> descrição de cada uma. Enviar a descrição junto (não só o
+     * código) é o que permite ao LLM explicar a relação com precisão, em vez
+     * de "adivinhar" com base no nome/prefixo do código.
      */
-    public List<String> regrasRelacionadas;
+    public Map<String, String> regrasRelacionadas;
 
     /** Nome da classe OWL à qual a regra pertence (ex.: RegraEquilibrioMovimento). */
     public String classeRegra;
@@ -28,7 +30,7 @@ public class ContextoSemantico {
     }
 
     public ContextoSemantico(String codigoRegra, String descricaoRegra,
-                              List<String> regrasRelacionadas, String classeRegra) {
+                              Map<String, String> regrasRelacionadas, String classeRegra) {
         this.codigoRegra = codigoRegra;
         this.descricaoRegra = descricaoRegra;
         this.regrasRelacionadas = regrasRelacionadas;

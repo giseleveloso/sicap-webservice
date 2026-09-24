@@ -1,20 +1,29 @@
 package br.edu.unitins.sicap.service;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.semanticweb.HermiT.ReasonerFactory;
+import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLDataProperty;
+import org.semanticweb.owlapi.model.OWLIndividual;
+import org.semanticweb.owlapi.model.OWLLiteral;
+import org.semanticweb.owlapi.model.OWLNamedIndividual;
+import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.reasoner.OWLReasoner;
+import org.semanticweb.owlapi.search.EntitySearcher;
 
 import br.edu.unitins.sicap.dto.ContextoSemantico;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.semanticweb.HermiT.ReasonerFactory;
-import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.model.*;
-import org.semanticweb.owlapi.reasoner.OWLReasoner;
-import org.semanticweb.owlapi.search.EntitySearcher;
-
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Serviço Ontológico descrito na seção 3.5 do TCC: carrega a ontologia OWL
@@ -68,7 +77,7 @@ public class OntologyService {
      * Retorna o contexto semântico de uma regra a partir do seu código
      * (ex.: "BV3"), já considerando as inferências do reasoner.
      */
-    public ContextoSemantico obterContextoSemantico(String codigoRegra) {
+        public ContextoSemantico obterContextoSemantico(String codigoRegra) {
         OWLNamedIndividual individuo = buscarIndividuoPorCodigo(codigoRegra);
         if (individuo == null) {
             throw new IllegalArgumentException("Regra não encontrada na ontologia: " + codigoRegra);
@@ -76,7 +85,7 @@ public class OntologyService {
 
         String descricao = obterValorDataProperty(individuo, "descricaoRegra");
         String classeRegra = obterClasse(individuo);
-        List<String> relacionadas = obterCodigosRelacionados(individuo);
+        Map<String, String> relacionadas = obterRegrasRelacionadasComDescricao(individuo);
 
         return new ContextoSemantico(codigoRegra, descricao, relacionadas, classeRegra);
     }
@@ -104,11 +113,17 @@ public class OntologyService {
                 .orElse(null);
     }
 
-    private List<String> obterCodigosRelacionados(OWLNamedIndividual individuo) {
+        private Map<String, String> obterRegrasRelacionadasComDescricao(OWLNamedIndividual individuo) {
         OWLObjectProperty relacionadaCom = factory.getOWLObjectProperty(IRI.create(namespace + "relacionadaCom"));
-        return EntitySearcher.getObjectPropertyValues(individuo, relacionadaCom, ontology)
+        Map<String, String> resultado = new LinkedHashMap<>();
+        EntitySearcher.getObjectPropertyValues(individuo, relacionadaCom, ontology)
                 .filter(OWLIndividual::isNamed)
-                .map(ind -> ind.asOWLNamedIndividual().getIRI().getShortForm())
-                .collect(Collectors.toList());
+                .map(OWLIndividual::asOWLNamedIndividual)
+                .forEach(relacionado -> {
+                    String codigo = relacionado.getIRI().getShortForm();
+                    String descricao = obterValorDataProperty(relacionado, "descricaoRegra");
+                    resultado.put(codigo, descricao != null ? descricao : "(sem descrição cadastrada)");
+                });
+        return resultado;
     }
 }

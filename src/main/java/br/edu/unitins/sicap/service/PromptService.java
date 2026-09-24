@@ -1,5 +1,7 @@
 package br.edu.unitins.sicap.service;
 
+import java.util.Map;
+
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import br.edu.unitins.sicap.dto.ContextoSemantico;
@@ -11,17 +13,20 @@ import jakarta.enterprise.context.ApplicationScoped;
  * 1) papel e tarefa (fixo) 2) fontes de contexto 3) dados dinâmicos da
  * inconsistência, incluindo as regras relacionadas inferidas pela ontologia.
  *
- * Inclui também um bloco de restrição anti-alucinação (lista fechada de
- * regras válidas), adicionado depois de observar que modelos menores
- * (ex.: llama3.2 3B) tendem a inventar códigos de regra inexistentes
- * (ex.: "BV35") quando não recebem esse limite explícito.
+ * Inclui um bloco de restrição anti-alucinação (lista fechada de regras
+ * válidas + proibição explícita de especular sobre relações fora da lista
+ * fornecida pela ontologia), adicionado após observar 3 padrões distintos de
+ * alucinação nos testes: (1) invenção de código de regra inexistente,
+ * (2) descrição incorreta da função de uma regra relacionada real, e
+ * (3) especulação sobre relações reais-porém-inexistentes, mesmo com
+ * ressalva de incerteza. As descrições das regras relacionadas agora são
+ * enviadas junto ao prompt (não só o código), justamente para mitigar o
+ * padrão (2).
  */
 @ApplicationScoped
 public class PromptService {
 
-    // Escopo fechado da prova de conceito (seção 4.3 do TCC I): só estas
-    // 3 regras estão modeladas na ontologia. Ajuste aqui se o escopo for
-    // ampliado no TCC II.
+    // Escopo fechado da prova de conceito: regras modeladas na ontologia.
     @ConfigProperty(name = "sicap.regras.validas", defaultValue = "BV3, BV29, BV32")
     String regrasValidas;
 
@@ -50,9 +55,15 @@ public class PromptService {
         prompt.append("Código: ").append(contexto.codigoRegra).append("\n");
         prompt.append("Classe ontológica: ").append(contexto.classeRegra).append("\n");
         prompt.append("Descrição formal: ").append(contexto.descricaoRegra).append("\n");
+
         if (contexto.regrasRelacionadas != null && !contexto.regrasRelacionadas.isEmpty()) {
-            prompt.append("Regras relacionadas (inferidas pela ontologia): ")
-                    .append(String.join(", ", contexto.regrasRelacionadas)).append("\n");
+            prompt.append("Regras relacionadas (inferidas pela ontologia, com suas descrições oficiais):\n");
+            for (Map.Entry<String, String> entrada : contexto.regrasRelacionadas.entrySet()) {
+                prompt.append("- ").append(entrada.getKey()).append(": ")
+                        .append(entrada.getValue()).append("\n");
+            }
+        } else {
+            prompt.append("Regras relacionadas (inferidas pela ontologia): nenhuma.\n");
         }
         prompt.append("\n");
 
@@ -61,11 +72,22 @@ public class PromptService {
         prompt.append("As únicas regras de validação existentes neste sistema são: ")
                 .append(regrasValidas).append(".\n");
         prompt.append("NÃO mencione, cite ou invente nenhum código de regra fora dessa lista, ")
-                .append("mesmo que pareça plausível. Se não tiver certeza sobre alguma informação, ")
-                .append("diga explicitamente que não possui dados suficientes em vez de inventar. ")
-                .append("Use apenas terminologia de contabilidade PÚBLICA MUNICIPAL brasileira ")
-                .append("(ex.: TCE, prestação de contas, Lei 4.320/1964, MCASP) - não use vocabulário ")
-                .append("de contabilidade empresarial/privada (ex.: investidores, acionistas).\n\n");
+                .append("mesmo que pareça plausível.\n");
+        prompt.append("No item sobre 'quais outras validações podem estar relacionadas', mencione ")
+                .append("APENAS os códigos que aparecem explicitamente na lista 'Regras relacionadas' ")
+                .append("acima. NÃO especule sobre relações adicionais, mesmo com ressalvas como ")
+                .append("'pode estar relacionado', 'possivelmente' ou 'indiretamente' - se a lista ")
+                .append("estiver vazia ou não contiver uma regra específica, diga explicitamente que ")
+                .append("não há regras relacionadas identificadas pela ontologia, em vez de sugerir ")
+                .append("outras por conta própria.\n");
+        prompt.append("Ao explicar uma regra relacionada, baseie-se ESTRITAMENTE na descrição oficial ")
+                .append("fornecida acima para ela - não invente nem infira uma função diferente da que ")
+                .append("foi descrita.\n");
+        prompt.append("Se não tiver certeza sobre alguma informação, diga explicitamente que não possui ")
+                .append("dados suficientes em vez de inventar. Use apenas terminologia de contabilidade ")
+                .append("PÚBLICA MUNICIPAL brasileira (ex.: TCE, prestação de contas, Lei 4.320/1964, ")
+                .append("MCASP) - não use vocabulário de contabilidade empresarial/privada (ex.: ")
+                .append("investidores, acionistas).\n\n");
 
         // Bloco 3 - dados dinâmicos da inconsistência recebida na requisição
         prompt.append("[Dados da inconsistência]\n");

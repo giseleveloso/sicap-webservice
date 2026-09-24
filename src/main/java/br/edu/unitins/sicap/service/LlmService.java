@@ -60,6 +60,12 @@ public class LlmService {
     @ConfigProperty(name = "gemini.api.url", defaultValue = "https://generativelanguage.googleapis.com/v1beta/models")
     String geminiApiUrl;
 
+    // Temperatura baixa reduz a propensão a especular sobre relações entre
+    // regras não confirmadas pela ontologia (o padrão de alucinação "leve"
+    // observado no Gemini e no Grok).
+    @ConfigProperty(name = "gemini.temperature", defaultValue = "0.2")
+    Double geminiTemperature;
+
     // --- Grok (xAI) ---
     // API compatível com o formato da OpenAI (mesmo corpo de requisição e
     // resposta), então reaproveitamos o mesmo parsing do gerarExplicacaoOpenAi.
@@ -202,6 +208,9 @@ public class LlmService {
             ArrayNode parts = content.putArray("parts");
             ObjectNode part = parts.addObject();
             part.put("text", prompt);
+
+            ObjectNode generationConfig = raiz.putObject("generationConfig");
+            generationConfig.put("temperature", geminiTemperature);
 
             String corpoRequisicao = objectMapper.writeValueAsString(raiz);
 

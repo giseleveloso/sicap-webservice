@@ -1,6 +1,5 @@
 package br.edu.unitins.sicap.dto;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,7 +23,4 @@ public class InconsistenciaRequest {
 
     /** Bimestre de referência da remessa. */
     public Integer bimestre;
-
-    /** Códigos de outras regras semanticamente relacionadas (opcional, pode vir vazio). */
-    public List<String> regrasRelacionadas;
 }
