@@ -76,17 +76,24 @@ public class PromptService {
         prompt.append("No item sobre 'quais outras validações podem estar relacionadas', mencione ")
                 .append("APENAS os códigos que aparecem explicitamente na lista 'Regras relacionadas' ")
                 .append("acima. NÃO especule sobre relações adicionais, mesmo com ressalvas como ")
-                .append("'pode estar relacionado', 'possivelmente' ou 'indiretamente' - se a lista ")
+                .append("'pode estar relacionado', 'possivelmente' ou 'indiretamente', se a lista ")
                 .append("estiver vazia ou não contiver uma regra específica, diga explicitamente que ")
                 .append("não há regras relacionadas identificadas pela ontologia, em vez de sugerir ")
                 .append("outras por conta própria.\n");
         prompt.append("Ao explicar uma regra relacionada, baseie-se ESTRITAMENTE na descrição oficial ")
-                .append("fornecida acima para ela - não invente nem infira uma função diferente da que ")
-                .append("foi descrita.\n");
+                .append("fornecida acima para ela, não invente nem infira uma função diferente da que ")
+                .append("foi descrita. Para cada regra relacionada listada, explique também POR QUE ela ")
+                .append("se relaciona com a regra principal (").append("código ").append("informado no ")
+                .append("bloco [Dados da inconsistência]), comparando as duas descrições oficiais e ")
+                .append("destacando o vínculo conceitual entre elas, por exemplo, se envolvem a mesma ")
+                .append("entidade contábil, se uma depende do resultado da outra, se verificam aspectos ")
+                .append("complementares do mesmo processo, etc. Essa explicação do vínculo deve se basear ")
+                .append("EXCLUSIVAMENTE nas duas descrições fornecidas acima, não invente detalhes, ")
+                .append("dados ou motivos que não decorram diretamente delas.\n");
         prompt.append("Se não tiver certeza sobre alguma informação, diga explicitamente que não possui ")
                 .append("dados suficientes em vez de inventar. Use apenas terminologia de contabilidade ")
                 .append("PÚBLICA MUNICIPAL brasileira (ex.: TCE, prestação de contas, Lei 4.320/1964, ")
-                .append("MCASP) - não use vocabulário de contabilidade empresarial/privada (ex.: ")
+                .append("MCASP), não use vocabulário de contabilidade empresarial/privada (ex.: ")
                 .append("investidores, acionistas).\n\n");
 
         // Bloco 3 - dados dinâmicos da inconsistência recebida na requisição
